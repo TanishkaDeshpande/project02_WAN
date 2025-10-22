@@ -710,8 +710,13 @@ static void print_stats(void)
     /* Spec “drops” definition: highest_seq_seen - total_packets_received */
     long drops_spec = (highest_received_seq > 0) ? (highest_received_seq - packets_received) : 0;
 
+    /* Compute experienced loss rate (%) */
+    double experienced_loss_rate = 0.0;
+    if (highest_received_seq > 0) {
+        experienced_loss_rate = ((double)drops_spec / (double)highest_received_seq) * 100.0;
+    }
+
     /* Clean data sizes (payload only) */
-    /* If MAX_DATA_LEN is the payload size (1300), this reflects clean bytes delivered. */
     const double BYTES_PER_PKT = (double)MAX_DATA_LEN;
     double clean_bytes = packets_delivered * BYTES_PER_PKT;
     double clean_mb    = clean_bytes / (1024.0 * 1024.0);
@@ -731,10 +736,12 @@ static void print_stats(void)
     printf(" Highest seen seq:      %d\n", highest_received_seq);
     printf(" Packets received:      %ld\n", packets_received);
     printf(" Spec loss (drops):     %ld  (= highest_seen - received)\n", drops_spec);
+    printf(" Experienced loss rate: %.2f %%\n", experienced_loss_rate);
     printf(" One-way delay (ms):    avg=%.2f  min=%.2f  max=%.2f\n",
            avg_delay_ms, min_delay_ms, max_delay_ms);
     printf("------------------------------------\n");
 }
+
 
 /* ------------------ CLI ------------------ */
 static void Usage(int argc, char *argv[])
